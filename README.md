@@ -1,94 +1,38 @@
 # Overwatch Queue Tracker
 
-Automatically detect Overwatch game states and notify the **Overwatch Personal Tracker** (OW Tracker) mobile app over your local network.
+## Download & install (recommended for most users)
 
-## Features
+1. Open the latest release here: [OW Queue Tracker Desktop releases](https://github.com/cycalo/OW_Queue_Tracker/releases).
+2. Under the latest release, scroll down and download **`OWTrackerDesktop.exe`**.  
+   - No extra installer or .NET runtime is required; it’s a single self‑contained app.
+3. Open **`OWTrackerDesktop.exe`** and click on the **`Instructions`** button for help to get started
 
-- Automatic queue detection (Searching, Game Found, Match Starting)
-- Real-time sync with mobile app via WebSocket
-- Runs in the system tray; main window shows server address, status, and display selector
-- Local network only — no data leaves your WiFi
+## What this app does
+
+OW Queue Tracker Desktop automatically detects your Overwatch queue state on your PC and sends updates to the **Overwatch Personal Tracker** (OW Tracker) mobile app over your local Wi‑Fi.
 
 ## Requirements
 
-- Windows 10 or 11 (64-bit)
-- .NET 10 Runtime (included if building from source with the SDK)
-- Overwatch
-- Overwatch Personal Tracker (OW Tracker) on the same WiFi network
-- English language pack installed (for OCR)
+- Windows 10 or 11 (64‑bit)
+- Overwatch installed on your PC
+- Overwatch Personal Tracker (OW Tracker) running on your phone
+- Phone and PC on the **same Wi‑Fi network**
+- Overwatch set to **English** (for text detection)
 
-## Building from Source
+## Quick start
 
-From the project root (`OW_Queue_Tracker`):
+1. Start `OWTrackerDesktop.exe`.  
+2. Follow the in‑app instructions to find your **Server Address** and select the correct display.  
+3. On your phone, open the OW Tracker app and connect to the server address shown on the desktop app.  
+4. Launch Overwatch and queue for a match; your phone will be updated when you are **Searching**, **Game Found**, and **Match Starting**.
 
-```bash
-dotnet restore
-dotnet build
-dotnet run
-```
+## Basic troubleshooting
 
-### Publish a single-file executable
+- Make sure your PC and phone are on the same Wi‑Fi.  
+- If the phone cannot connect, check Windows Firewall and allow the app’s network access.  
+- If game states are not detected, set Overwatch to **Borderless Windowed** or **Fullscreen** and make sure the language is **English**.
 
-```bash
-dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
-```
+## License & disclaimer
 
-The executable will be in `bin/Release/net10.0-windows10.0.19041.0/win-x64/publish/`.
-
-## Usage
-
-1. Launch the app — it starts in the system tray and opens the main window.
-2. The main window shows **Server:** with your PC’s IP and port (e.g. `192.168.1.x:8080`). Use **Display Capture** if you have multiple monitors.
-3. Open **Overwatch Personal Tracker** (OW Tracker) on your phone and connect to that address.
-4. Launch Overwatch and queue for a match. Your phone receives notifications when:
-   - **Searching** — you entered the queue
-   - **Game Found** — a match was found
-   - **Match Starting** — loading into the game
-
-You can **Minimize to System Tray** and use **Instructions** for step-by-step connection help.
-
-### Tray menu
-
-- **Open** — restore the main window (or double-click the tray icon)
-- **Start Monitoring** / **Stop Monitoring** — toggle screen scanning
-- **About** — version info
-- **Exit** — quit the app
-
-## Troubleshooting
-
-**Overwatch Personal Tracker won’t connect**
-
-- Ensure both devices are on the same WiFi network.
-- Check Windows Firewall allows inbound connections on port 8080.
-- Use the Server address shown in the main window (or after opening from the tray).
-
-**Game states not detected**
-
-- Overwatch must be in **Borderless Windowed** or **Fullscreen** on the selected display.
-- The game language must be set to **English**.
-- Screen capture uses relative regions calibrated for 16:9; it works across common resolutions (e.g. 2560×1440).
-
-## How it works
-
-The app captures two small screen regions every 2 seconds and runs Windows built-in OCR on them:
-
-| Region            | What it detects              |
-|-------------------|------------------------------|
-| Top-center banner | "SEARCHING" / "GAME FOUND"   |
-| Center overlay    | "ENTERING PREGAME"           |
-
-When a state change is detected, a JSON message is broadcast to all connected WebSocket clients.
-
-## Privacy
-
-- All communication stays on your local network.
-- No internet connection required after installation.
-- No data collection or telemetry.
-
-## License
-
-MIT
-
-## Disclaimer
-
-Not affiliated with Blizzard Entertainment.
+- License: **MIT**  
+- Not affiliated with Blizzard Entertainment.
