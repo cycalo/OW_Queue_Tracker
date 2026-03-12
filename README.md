@@ -2,10 +2,18 @@
 
 ## Download & install (recommended for most users)
 
-1. Open the latest release here: [OW Queue Tracker Desktop releases](https://github.com/cycalo/OW_Queue_Tracker/releases).
-2. Under the latest release, scroll down and download **`OWTrackerDesktop.exe`**.  
-   - No extra installer or .NET runtime is required; it’s a single self‑contained app.
-3. Open **`OWTrackerDesktop.exe`** and click on the **`Instructions`** button for help to get started
+1. Open the latest release here, scroll down and download **`OWTrackerDesktop.exe`**.
+   - [OW Queue Tracker Desktop releases](https://github.com/cycalo/OW_Queue_Tracker/releases).
+2. Open **`OWTrackerDesktop.exe`** and click on the **`Instructions`** button for help to get started
+
+### Virus Scan Results and Hashes ###
+[Virus Total Scan Results](https://www.virustotal.com/gui/file/3b4815ec1ac6475bfd3fdb0ebd3f1adfd983a6eee734ef54e4a1f1d27a66cb43/detection).
+
+**`MD5 - 66E451D3C4D73FFF16D2FF69B1615A26`**
+**`SHA-256 - 3B4815EC1AC6475BFD3FDB0EBD3F1ADFD983A6EEE734EF54E4A1F1D27A66CB43`**
+
+
+
 
 ## What this app does
 
