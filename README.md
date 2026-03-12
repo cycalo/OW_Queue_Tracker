@@ -1,6 +1,6 @@
 # Overwatch Queue Tracker
 
-## Download & install (recommended for most users)
+## Download & install
 
 1. Open the latest release here, scroll down and download **`OWTrackerDesktop.exe`**.
    - [OW Queue Tracker Desktop releases](https://github.com/cycalo/OW_Queue_Tracker/releases).
