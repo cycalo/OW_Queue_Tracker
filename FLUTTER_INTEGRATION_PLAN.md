@@ -1,3 +1,6 @@
+
+## Please note this plan is now complete ##
+
 # Flutter App – Overwatch Queue Tracker Integration Plan
 
 **Purpose:** Connect the **Overwatch Personal Tracker** (OW Tracker) mobile app to the **Overwatch Queue Tracker** desktop companion (Windows) so the phone receives real-time Overwatch queue notifications, especially **"Game found!"**, and can show local push notifications.
