@@ -8,7 +8,7 @@
 
 ### Virus Scan Results ###
 [Virus Total Scan Results](https://www.virustotal.com/gui/file/3b4815ec1ac6475bfd3fdb0ebd3f1adfd983a6eee734ef54e4a1f1d27a66cb43/detection).
-### Hases ###
+### Hashes ###
 - **`MD5 - 66E451D3C4D73FFF16D2FF69B1615A26`**
 - **`SHA-256 - 3B4815EC1AC6475BFD3FDB0EBD3F1ADFD983A6EEE734EF54E4A1F1D27A66CB43`**
 
