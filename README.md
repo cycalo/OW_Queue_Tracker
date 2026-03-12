@@ -1,4 +1,4 @@
-# OW Tracker Desktop Companion
+# Overwatch Queue Tracker
 
 Automatically detect Overwatch game states and notify the **Overwatch Personal Tracker** (OW Tracker) mobile app over your local network.
 

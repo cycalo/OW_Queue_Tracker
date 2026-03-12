@@ -15,7 +15,7 @@ public class InstructionsForm : Form
         MinimizeBox = false;
 
         var text = @"1. Keep this app running
-   OW Tracker Desktop must be open on your PC.
+   Overwatch Queue Tracker must be open on your PC.
 
 2. Your phone and PC need to be on the same WiFi network (or same internet connection).
 

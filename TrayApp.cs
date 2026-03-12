@@ -35,7 +35,7 @@ public class TrayApp : ApplicationContext
         {
             Icon = SystemIcons.Application,
             Visible = true,
-            Text = "OW Tracker Desktop",
+            Text = "Overwatch Queue Tracker",
             ContextMenuStrip = contextMenu
         };
         _trayIcon.DoubleClick += (_, _) => ShowStatus();
@@ -57,7 +57,7 @@ public class TrayApp : ApplicationContext
 
             _trayIcon.ShowBalloonTip(
                 3000,
-                "OW Tracker Desktop",
+                "Overwatch Queue Tracker",
                 $"Monitoring active. Server: {_webSocketServer.LocalIP}:{_webSocketServer.Port}",
                 ToolTipIcon.Info);
         }
@@ -65,7 +65,7 @@ public class TrayApp : ApplicationContext
         {
             MessageBox.Show(
                 $"Failed to start services:\n{ex.Message}",
-                "OW Tracker Desktop - Error",
+                "Overwatch Queue Tracker - Error",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
             ExitThread();
@@ -78,7 +78,7 @@ public class TrayApp : ApplicationContext
         bool mobileConnected = _webSocketServer.GetConnectedClientCount() > 0;
 
         _statusItem.Text = $"Status: {(monitoring ? "Active" : "Paused")} | {(mobileConnected ? "Mobile connected" : "Mobile disconnected")}";
-        _trayIcon.Text = $"OW Tracker Desktop\n" +
+        _trayIcon.Text = $"Overwatch Queue Tracker\n" +
                          $"{(monitoring ? "Monitoring" : "Paused")} | {(mobileConnected ? "Mobile connected" : "Mobile disconnected")}\n" +
                          $"{_webSocketServer.LocalIP}:{_webSocketServer.Port}";
     }
@@ -108,12 +108,12 @@ public class TrayApp : ApplicationContext
         bool monitoring = _gameMonitor.IsMonitoring;
 
         MessageBox.Show(
-            $"OW Tracker Desktop v1.0\n\n" +
+            $"Overwatch Queue Tracker v1.0\n\n" +
             $"Server Address: {ip}:{port}\n" +
             $"{(mobileConnected ? "Mobile App Connected" : "Mobile App Disconnected")}\n" +
             $"Monitoring: {(monitoring ? "Active" : "Paused")}\n\n" +
             $"Connect your mobile app to: {ip}:{port}",
-            "OW Tracker Desktop - Status",
+            "Overwatch Queue Tracker - Status",
             MessageBoxButtons.OK,
             MessageBoxIcon.Information);
     }
@@ -121,12 +121,12 @@ public class TrayApp : ApplicationContext
     private void OnAbout(object? sender, EventArgs e)
     {
         MessageBox.Show(
-            "OW Tracker Desktop v1.0\n\n" +
+            "Overwatch Queue Tracker v1.0\n\n" +
             "Companion app for Overwatch Personal Tracker (OW Tracker).\n" +
             "Detects Overwatch game states and sends\n" +
             "real-time notifications to your phone.\n\n" +
             "Not affiliated with Blizzard Entertainment.",
-            "About OW Tracker Desktop",
+            "About Overwatch Queue Tracker",
             MessageBoxButtons.OK,
             MessageBoxIcon.Information);
     }

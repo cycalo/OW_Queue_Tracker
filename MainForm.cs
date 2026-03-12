@@ -22,7 +22,7 @@ public class MainForm : Form
 
     public MainForm()
     {
-        Text = "OW Tracker Desktop";
+        Text = "Overwatch Queue Tracker";
         Size = new Size(420, 358);
         MinimumSize = new Size(380, 320);
         StartPosition = FormStartPosition.CenterScreen;
@@ -151,7 +151,7 @@ public class MainForm : Form
         _trayIcon = new NotifyIcon
         {
             Icon = SystemIcons.Application,
-            Text = "OW Tracker Desktop",
+            Text = "Overwatch Queue Tracker",
             Visible = true
         };
 
@@ -240,7 +240,7 @@ public class MainForm : Form
 
             _trayIcon.ShowBalloonTip(
                 3000,
-                "OW Tracker Desktop",
+                "Overwatch Queue Tracker",
                 $"Monitoring started. Server: {_webSocketServer.LocalIP}:{_webSocketServer.Port}",
                 ToolTipIcon.Info);
         }
@@ -248,7 +248,7 @@ public class MainForm : Form
         {
             MessageBox.Show(
                 $"Failed to start services:\n{ex.Message}",
-                "OW Tracker Desktop - Error",
+                "Overwatch Queue Tracker - Error",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
             Close();
@@ -278,7 +278,7 @@ public class MainForm : Form
         _clientsLabel.Text = mobileConnected ? "Mobile App Connected" : "Mobile App Disconnected";
         _gameStateLabel.Text = $"Current state: {stateText}";
 
-        _trayIcon.Text = $"OW Tracker Desktop — {(monitoring ? "Active" : "Paused")} | {(mobileConnected ? "Mobile connected" : "Mobile disconnected")}";
+        _trayIcon.Text = $"Overwatch Queue Tracker — {(monitoring ? "Active" : "Paused")} | {(mobileConnected ? "Mobile connected" : "Mobile disconnected")}";
     }
 
     private void SyncTrayMenu()
@@ -309,7 +309,7 @@ public class MainForm : Form
     private void MinimizeToTray()
     {
         Hide();
-        _trayIcon.ShowBalloonTip(1500, "OW Tracker Desktop", "Running in system tray. Double-click to open.", ToolTipIcon.Info);
+        _trayIcon.ShowBalloonTip(1500, "Overwatch Queue Tracker", "Running in system tray. Double-click to open.", ToolTipIcon.Info);
     }
 
     private void RestoreFromTray()
@@ -340,12 +340,12 @@ public class MainForm : Form
     private void OnAbout(object? sender, EventArgs e)
     {
         MessageBox.Show(
-            "OW Tracker Desktop v1.0\n\n" +
+            "Overwatch Queue Tracker v1.0\n\n" +
             "Companion app for Overwatch Personal Tracker (OW Tracker).\n" +
             "Detects Overwatch game states and sends\n" +
             "real-time notifications to your phone.\n\n" +
             "Not affiliated with Blizzard Entertainment.",
-            "About OW Tracker Desktop",
+            "About Overwatch Queue Tracker",
             MessageBoxButtons.OK,
             MessageBoxIcon.Information);
     }

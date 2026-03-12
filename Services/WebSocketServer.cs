@@ -115,7 +115,7 @@ public class OWTrackerBehavior : WebSocketBehavior
         var welcome = new
         {
             type = "connected",
-            data = new { message = "Connected to OW Tracker Desktop" },
+            data = new { message = "Connected to Overwatch Queue Tracker" },
             timestamp = DateTime.UtcNow.ToString("o")
         };
         Send(JsonConvert.SerializeObject(welcome));

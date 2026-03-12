@@ -1,8 +1,8 @@
-# Flutter App – OW Tracker Desktop Integration Plan
+# Flutter App – Overwatch Queue Tracker Integration Plan
 
-**Purpose:** Connect the **Overwatch Personal Tracker** (OW Tracker) mobile app to the OW Tracker Desktop companion (Windows) so the phone receives real-time Overwatch queue notifications, especially **"Game found!"**, and can show local push notifications.
+**Purpose:** Connect the **Overwatch Personal Tracker** (OW Tracker) mobile app to the **Overwatch Queue Tracker** desktop companion (Windows) so the phone receives real-time Overwatch queue notifications, especially **"Game found!"**, and can show local push notifications.
 
-**Prerequisites:** OW Tracker Desktop is running on the user's PC (same WiFi as the phone), with monitoring active and the WebSocket server listening.
+**Prerequisites:** Overwatch Queue Tracker is running on the user's PC (same WiFi as the phone), with monitoring active and the WebSocket server listening.
 
 ---
 
@@ -31,7 +31,7 @@ The desktop app does **not** discover or advertise itself to the phone. The user
 
 **Flow:**
 
-1. User starts **OW Tracker Desktop** on the PC (same WiFi as the phone).
+1. User starts **Overwatch Queue Tracker** on the PC (same WiFi as the phone).
 2. User sees the **server address** on the desktop (see below).
 3. User opens **Overwatch Personal Tracker** (OW Tracker) on their phone and goes to the "Connect to desktop" (or similar) screen.
 4. User **enters the IP** (and optionally port) shown on the desktop, then taps **Connect**.
@@ -52,7 +52,7 @@ So the **source of truth** for "what address to enter in the app" is the desktop
 ### 2.3 Overwatch Personal Tracker UX for "Connect to desktop"
 
 - **Screen or section:** A **dedicated screen** (e.g. route `/settings/desktop` or `/connect-desktop`) reached from Settings via a tile like "Desktop" or "Queue alerts" (see **§1 Decisions**). On that screen:
-  - A short explanation: "Enter the Server address shown in OW Tracker Desktop on your PC (e.g. 192.168.1.105 or 192.168.1.105:8080). PC and phone must be on the same WiFi."
+  - A short explanation: "Enter the Server address shown in Overwatch Queue Tracker on your PC (e.g. 192.168.1.105 or 192.168.1.105:8080). PC and phone must be on the same WiFi."
   - **Input:** One field for "PC address" (IP, or IP:port), or two fields (IP + port, port defaulting to 8080).
   - **Connect** button that opens the WebSocket to `ws://<ip>:8080/` (or the entered port).
   - **Connection status:** "Connecting…", "Connected", "Disconnected", "Error: …" so the user knows whether the link is active.
@@ -101,7 +101,7 @@ Sent once when the Flutter client connects.
 {
   "type": "connected",
   "data": {
-    "message": "Connected to OW Tracker Desktop"
+    "message": "Connected to Overwatch Queue Tracker"
   },
   "timestamp": "2026-03-09T14:30:00.0000000Z"
 }
@@ -196,7 +196,7 @@ These are optional; the critical one is `**gamefound**` for the "game found" not
 
 ## 6. Desktop App Reference (for context)
 
-- The desktop app is a separate C# .NET 10 Windows project (OW Tracker Desktop).
+- The desktop app is a separate C# .NET 10 Windows project (**Overwatch Queue Tracker**).
 - It captures the Overwatch screen, runs OCR, and detects: Idle, Searching, GameFound, MatchStarting.
 - When the state changes, it broadcasts the JSON above to all connected WebSocket clients.
 - The desktop app lives at the **project root** (`OW_Queue_Tracker`). Manual testing with the built desktop app is the primary way to verify integration; optional automated tests can use a mock WebSocket server (see **§1**).
@@ -220,7 +220,7 @@ These are optional; the critical one is `**gamefound**` for the "game found" not
 
 ## 8. Quick test
 
-1. Run **OW Tracker Desktop** on the PC. In the main window, note the **Server** line (e.g. `Server: 192.168.1.105:8080`).
+1. Run **Overwatch Queue Tracker** on the PC. In the main window, note the **Server** line (e.g. `Server: 192.168.1.105:8080`).
 2. On Overwatch Personal Tracker, open the Connect to desktop screen, enter that IP (and port if not 8080), then tap Connect.
 3. You should receive one message with `type: "connected"` and see "Connected" in the app.
 4. Queue in Overwatch on the PC; you should receive messages with `type: "searching"`, then `type: "gamefound"` when a match is found.
