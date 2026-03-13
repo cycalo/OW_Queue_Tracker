@@ -212,7 +212,7 @@ public class MainForm : Form
 
         _statusSubtextLabel = new Label
         {
-            Text = "Keep Overwatch visible — do not minimize",
+            Text = "Keep Overwatch visible — do not minimize while searching for a match",
             Font = new Font("Segoe UI", 9f),
             ForeColor = TextMuted,
             BackColor = Color.Transparent,

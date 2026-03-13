@@ -25,6 +25,7 @@ OW Queue Tracker Desktop automatically detects your Overwatch queue state on you
 2. Follow the in‑app instructions to find your **Server Address** and select the correct display.  
 3. On your phone, open the OW Tracker app and connect to the server address shown on the desktop app.  
 4. Launch Overwatch and queue for a match; your phone will be updated when you are **Searching**, **Game Found**, and **Match Starting**.
+5. Keep Overwatch visible and not minimized
 
 ## Basic troubleshooting
 

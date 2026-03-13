@@ -102,13 +102,20 @@ public class InstructionsForm : Form
              "When a game is found, your phone will show a notification.")
         };
 
+        const int bodyWidth = 410;
+        var bodyFont = new Font("Segoe UI", 9.5f);
         int yPos = 12;
         foreach (var (number, stepTitle, body) in steps)
         {
+            // Measure wrapped body text so the full text is visible and the step panel fits it
+            var bodySize = TextRenderer.MeasureText(body, bodyFont, new Size(bodyWidth, int.MaxValue), TextFormatFlags.WordBreak);
+            int bodyHeight = bodySize.Height;
+            int stepPanelHeight = 22 + bodyHeight + 10;
+
             var stepPanel = new Panel
             {
                 Location = new Point(16, yPos),
-                Size = new Size(452, 56),
+                Size = new Size(452, stepPanelHeight),
                 BackColor = Color.Transparent
             };
 
@@ -136,11 +143,11 @@ public class InstructionsForm : Form
             var bodyLabel = new Label
             {
                 Text = body,
-                Font = new Font("Segoe UI", 9.5f),
+                Font = bodyFont,
                 ForeColor = TextSecondary,
                 BackColor = Color.Transparent,
                 AutoSize = false,
-                Size = new Size(410, 32),
+                Size = new Size(bodyWidth, bodyHeight),
                 Location = new Point(36, 22)
             };
 
@@ -148,7 +155,7 @@ public class InstructionsForm : Form
             stepPanel.Controls.Add(stepTitleLabel);
             stepPanel.Controls.Add(bodyLabel);
             contentPanel.Controls.Add(stepPanel);
-            yPos += stepPanel.Height + 6;
+            yPos += stepPanelHeight + 6;
         }
 
         yPos += 4;
