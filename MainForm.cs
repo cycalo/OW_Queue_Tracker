@@ -67,9 +67,9 @@ public class MainForm : Form
         DoubleBuffered = true;
 
         Text = "Overwatch Queue Tracker";
-        Size = new Size(480, 620);
-        MinimumSize = new Size(480, 620);
-        MaximumSize = new Size(480, 620);
+        Size = new Size(480, 668);
+        MinimumSize = new Size(480, 668);
+        MaximumSize = new Size(480, 668);
         StartPosition = FormStartPosition.CenterScreen;
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
@@ -309,7 +309,8 @@ public class MainForm : Form
 
     private void BuildControlsCard()
     {
-        _controlsCard = CreateCard(318, 140);
+        // Height must clear Start/Stop (y+36) and Minimize row (y+24) plus bottom padding
+        _controlsCard = CreateCard(318, 186);
 
         var captureLabel = new Label
         {
@@ -334,15 +335,27 @@ public class MainForm : Form
         PopulateDisplayCombo();
         _displayCombo.SelectedIndexChanged += OnDisplaySelectionChanged;
 
-        _startButton = CreateStyledButton("Start Monitoring", 16, 68, 195, 36, StatusGreen);
+        var brightnessHintLabel = new Label
+        {
+            Text = "Very low or very high monitor brightness can affect capture accuracy.",
+            Font = new Font("Segoe UI", 9f),
+            ForeColor = TextMuted,
+            BackColor = Color.Transparent,
+            AutoSize = false,
+            Size = new Size(400, 36),
+            Location = new Point(16, 64),
+            TextAlign = ContentAlignment.TopLeft
+        };
+
+        _startButton = CreateStyledButton("Start Monitoring", 16, 106, 195, 36, StatusGreen);
         _startButton.Click += OnStartMonitoring;
         _startButton.Enabled = true;
 
-        _stopButton = CreateStyledButton("Stop Monitoring", 221, 68, 195, 36, StatusRed);
+        _stopButton = CreateStyledButton("Stop Monitoring", 221, 106, 195, 36, StatusRed);
         _stopButton.Click += OnStopMonitoring;
         _stopButton.Enabled = false;
 
-        _minimizeToTrayButton = CreateStyledButton("Minimize to System Tray", 16, 112, 400, 24, TextMuted);
+        _minimizeToTrayButton = CreateStyledButton("Minimize to System Tray", 16, 150, 400, 28, TextMuted);
         _minimizeToTrayButton.FlatAppearance.BorderSize = 0;
         _minimizeToTrayButton.Font = new Font("Segoe UI", 9.5f);
         _minimizeToTrayButton.ForeColor = TextSecondary;
@@ -350,6 +363,7 @@ public class MainForm : Form
 
         _controlsCard.Controls.Add(captureLabel);
         _controlsCard.Controls.Add(_displayCombo);
+        _controlsCard.Controls.Add(brightnessHintLabel);
         _controlsCard.Controls.Add(_startButton);
         _controlsCard.Controls.Add(_stopButton);
         _controlsCard.Controls.Add(_minimizeToTrayButton);
@@ -377,19 +391,19 @@ public class MainForm : Form
 
     private void BuildBottomBar()
     {
-        var instructionsButton = CreateStyledButton("Instructions", 16, 472, 132, 34, TextSecondary);
+        var instructionsButton = CreateStyledButton("Instructions", 16, 520, 132, 34, TextSecondary);
         instructionsButton.FlatAppearance.BorderColor = BorderCard;
         instructionsButton.ForeColor = TextSecondary;
         instructionsButton.BackColor = Color.FromArgb(10, 255, 255, 255);
         instructionsButton.Click += OnInstructions;
 
-        var aboutButton = CreateStyledButton("About", 160, 472, 132, 34, TextSecondary);
+        var aboutButton = CreateStyledButton("About", 160, 520, 132, 34, TextSecondary);
         aboutButton.FlatAppearance.BorderColor = BorderCard;
         aboutButton.ForeColor = TextSecondary;
         aboutButton.BackColor = Color.FromArgb(10, 255, 255, 255);
         aboutButton.Click += OnAbout;
 
-        var exitButton = CreateStyledButton("Exit", 304, 472, 144, 34, StatusRed);
+        var exitButton = CreateStyledButton("Exit", 304, 520, 144, 34, StatusRed);
         exitButton.Click += OnExitClick;
 
         var versionLabel = new Label
@@ -401,7 +415,7 @@ public class MainForm : Form
             AutoSize = false,
             TextAlign = ContentAlignment.MiddleCenter,
             Size = new Size(432, 20),
-            Location = new Point(16, 515)
+            Location = new Point(16, 563)
         };
 
         Controls.Add(instructionsButton);
