@@ -1,5 +1,7 @@
 # Overwatch Queue Tracker
 
+**Desktop app version:** 1.1
+
 ## Download & install
 
 1. Open the latest release here, scroll down and download **`OWTrackerDesktop.exe`**.
@@ -30,8 +32,8 @@ OW Queue Tracker Desktop automatically detects your Overwatch queue state on you
 ## Quick start
 
 1. Start `OWTrackerDesktop.exe`.  
-2. Follow the in‑app instructions to find your **Server Address** and select the correct display.  
-3. On your phone, open the OW Tracker app and connect to the server address shown on the desktop app.  
+2. If needed, choose the **network adapter** that matches your Wi‑Fi, pick the **display** Overwatch uses, and check the **Server** line (IP and port).  
+3. On your phone, open OW Tracker → **Desktop** tab → **Scan QR code**, and scan the QR shown on the PC.  
 4. Launch Overwatch and queue for a match; your phone will be updated when you are **Searching**, **Game Found**, and **Match Starting**.
 5. Keep Overwatch visible and not minimized
 

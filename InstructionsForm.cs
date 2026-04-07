@@ -90,15 +90,11 @@ public class InstructionsForm : Form
              "Overwatch Queue Tracker must be open on your PC."),
             ("2", "Keep Overwatch visible",
              "Do not minimize Overwatch. The game must be visible on screen for the tracker to work."),
-            ("3", "Same network",
-             "Your phone and PC need to be on the same WiFi network."),
-            ("4", "Find the server address",
-             "Look for Server followed by an IP address. You'll enter this on your phone."),
-            ("5", "Open the mobile app",
-             "Open OW Tracker on your phone and select the Desktop tab."),
-            ("6", "Enter the IP address",
-             "Type in the server IP address. You can ignore the :8080 part. Tap Connect."),
-            ("7", "Done",
+            ("3", "Same Wi\u2011Fi",
+             "Phone and PC must be on the same Wi\u2011Fi network."),
+            ("4", "Scan the QR code",
+             "On your phone, open OW Tracker → Desktop tab → Scan QR code from PC, and point the camera at the QR."),
+            ("5", "Done",
              "When a game is found, your phone will show a notification.")
         };
 

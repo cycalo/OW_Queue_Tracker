@@ -18,9 +18,10 @@ public class OCRService
 
     public async Task<string> ExtractText(Bitmap bitmap)
     {
+        Windows.Graphics.Imaging.SoftwareBitmap? softwareBitmap = null;
         try
         {
-            var softwareBitmap = await ScreenCapture.ConvertToSoftwareBitmap(bitmap);
+            softwareBitmap = await ScreenCapture.ConvertToSoftwareBitmap(bitmap);
             var result = await _ocrEngine.RecognizeAsync(softwareBitmap);
             return result.Text;
         }
@@ -28,6 +29,10 @@ public class OCRService
         {
             System.Diagnostics.Debug.WriteLine($"OCR Error: {ex.Message}");
             return string.Empty;
+        }
+        finally
+        {
+            softwareBitmap?.Dispose();
         }
     }
 

@@ -21,6 +21,11 @@ public class MainForm : Form
     private NotifyIcon _trayIcon = null!;
     private Label _statusLabel = null!;
     private Label _serverLabel = null!;
+    private PictureBox _connectionQrPicture = null!;
+    private ComboBox _qrIpCombo = null!;
+    private string _lastRenderedQrUri = "";
+    private bool _qrIpComboPopulating;
+    private ToolTip _toolTip = null!;
     private Label _clientsLabel = null!;
     private Label _gameStateLabel = null!;
     private Button _startButton = null!;
@@ -39,7 +44,6 @@ public class MainForm : Form
     private Panel _gameStateCard = null!;
     private Panel _controlsCard = null!;
     private Label _statusDot = null!;
-    private Label _statusSubtextLabel = null!;
     private Label _mobileDot = null!;
     private Label _gameStateDot = null!;
     private Label _titleLabel = null!;
@@ -67,9 +71,9 @@ public class MainForm : Form
         DoubleBuffered = true;
 
         Text = "Overwatch Queue Tracker";
-        Size = new Size(480, 668);
-        MinimumSize = new Size(480, 668);
-        MaximumSize = new Size(480, 668);
+        Size = new Size(480, 624);
+        MinimumSize = new Size(480, 624);
+        MaximumSize = new Size(480, 624);
         StartPosition = FormStartPosition.CenterScreen;
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
@@ -86,6 +90,9 @@ public class MainForm : Form
                 BeginInvoke(new Action(UpdateStatus));
             }
         };
+        _gameMonitor.PersistentFailure += OnMonitorPersistentFailure;
+
+        _toolTip = new ToolTip { AutoPopDelay = 20000, InitialDelay = 400, ReshowDelay = 200 };
 
         BuildHeader();
         BuildStatusCard();
@@ -187,7 +194,7 @@ public class MainForm : Form
 
     private void BuildStatusCard()
     {
-        _statusCard = CreateCard(80, 60);
+        _statusCard = CreateCard(80, 52);
 
         var monitorIcon = new Label
         {
@@ -196,7 +203,7 @@ public class MainForm : Form
             ForeColor = StatusGreen,
             BackColor = Color.Transparent,
             AutoSize = true,
-            Location = new Point(16, 14)
+            Location = new Point(16, 12)
         };
         _statusDot = monitorIcon;
 
@@ -207,29 +214,16 @@ public class MainForm : Form
             ForeColor = TextPrimary,
             BackColor = Color.Transparent,
             AutoSize = true,
-            Location = new Point(44, 18)
-        };
-
-        _statusSubtextLabel = new Label
-        {
-            Text = "Keep Overwatch visible — do not minimize while searching for a match",
-            Font = new Font("Segoe UI", 9f),
-            ForeColor = TextMuted,
-            BackColor = Color.Transparent,
-            AutoSize = true,
-            Location = new Point(44, 38)
+            Location = new Point(44, 16)
         };
 
         _statusCard.Controls.Add(monitorIcon);
         _statusCard.Controls.Add(_statusLabel);
-        _statusCard.Controls.Add(_statusSubtextLabel);
     }
 
     private void BuildConnectionCard()
     {
-        // Match the visual structure of the Monitoring card:
-        // dot on the left, primary line, then a secondary line of text.
-        _connectionCard = CreateCard(150, 60);
+        _connectionCard = CreateCard(140, 132);
 
         _mobileDot = new Label
         {
@@ -241,7 +235,6 @@ public class MainForm : Form
             Location = new Point(16, 14)
         };
 
-        // Primary line: mobile app connection status (mirrors Monitoring importance)
         _clientsLabel = new Label
         {
             Text = "Mobile App Disconnected",
@@ -252,7 +245,6 @@ public class MainForm : Form
             Location = new Point(44, 18)
         };
 
-        // Secondary line: server address beneath it
         _serverLabel = new Label
         {
             Text = "Server: —",
@@ -263,14 +255,39 @@ public class MainForm : Form
             Location = new Point(44, 38)
         };
 
+        _qrIpCombo = new ComboBox
+        {
+            Location = new Point(44, 58),
+            Size = new Size(252, 28),
+            DropDownWidth = 400,
+            DropDownStyle = ComboBoxStyle.DropDownList,
+            Font = new Font("Segoe UI", 9.5f),
+            BackColor = BgDeep,
+            ForeColor = TextPrimary,
+            FlatStyle = FlatStyle.Flat,
+            IntegralHeight = false
+        };
+        _qrIpCombo.SelectedIndexChanged += OnAdvertisedIpComboChanged;
+
+        _connectionQrPicture = new PictureBox
+        {
+            Location = new Point(302, 10),
+            Size = new Size(114, 114),
+            SizeMode = PictureBoxSizeMode.Zoom,
+            BackColor = Color.White,
+            BorderStyle = BorderStyle.FixedSingle
+        };
+
         _connectionCard.Controls.Add(_mobileDot);
         _connectionCard.Controls.Add(_clientsLabel);
         _connectionCard.Controls.Add(_serverLabel);
+        _connectionCard.Controls.Add(_qrIpCombo);
+        _connectionCard.Controls.Add(_connectionQrPicture);
     }
 
     private void BuildGameStateCard()
     {
-        _gameStateCard = CreateCard(240, 68);
+        _gameStateCard = CreateCard(280, 68);
 
         var sectionLabel = new Label
         {
@@ -309,8 +326,7 @@ public class MainForm : Form
 
     private void BuildControlsCard()
     {
-        // Height must clear Start/Stop (y+36) and Minimize row (y+24) plus bottom padding
-        _controlsCard = CreateCard(318, 186);
+        _controlsCard = CreateCard(356, 154);
 
         var captureLabel = new Label
         {
@@ -335,27 +351,15 @@ public class MainForm : Form
         PopulateDisplayCombo();
         _displayCombo.SelectedIndexChanged += OnDisplaySelectionChanged;
 
-        var brightnessHintLabel = new Label
-        {
-            Text = "Very low or very high monitor brightness can affect capture accuracy.",
-            Font = new Font("Segoe UI", 9f),
-            ForeColor = TextMuted,
-            BackColor = Color.Transparent,
-            AutoSize = false,
-            Size = new Size(400, 36),
-            Location = new Point(16, 64),
-            TextAlign = ContentAlignment.TopLeft
-        };
-
-        _startButton = CreateStyledButton("Start Monitoring", 16, 106, 195, 36, StatusGreen);
+        _startButton = CreateStyledButton("Start Monitoring", 16, 72, 195, 36, StatusGreen);
         _startButton.Click += OnStartMonitoring;
         _startButton.Enabled = true;
 
-        _stopButton = CreateStyledButton("Stop Monitoring", 221, 106, 195, 36, StatusRed);
+        _stopButton = CreateStyledButton("Stop Monitoring", 221, 72, 195, 36, StatusRed);
         _stopButton.Click += OnStopMonitoring;
         _stopButton.Enabled = false;
 
-        _minimizeToTrayButton = CreateStyledButton("Minimize to System Tray", 16, 150, 400, 28, TextMuted);
+        _minimizeToTrayButton = CreateStyledButton("Minimize to System Tray", 16, 116, 400, 28, TextMuted);
         _minimizeToTrayButton.FlatAppearance.BorderSize = 0;
         _minimizeToTrayButton.Font = new Font("Segoe UI", 9.5f);
         _minimizeToTrayButton.ForeColor = TextSecondary;
@@ -363,7 +367,6 @@ public class MainForm : Form
 
         _controlsCard.Controls.Add(captureLabel);
         _controlsCard.Controls.Add(_displayCombo);
-        _controlsCard.Controls.Add(brightnessHintLabel);
         _controlsCard.Controls.Add(_startButton);
         _controlsCard.Controls.Add(_stopButton);
         _controlsCard.Controls.Add(_minimizeToTrayButton);
@@ -391,31 +394,31 @@ public class MainForm : Form
 
     private void BuildBottomBar()
     {
-        var instructionsButton = CreateStyledButton("Instructions", 16, 520, 132, 34, TextSecondary);
+        var instructionsButton = CreateStyledButton("Instructions", 16, 526, 132, 34, TextSecondary);
         instructionsButton.FlatAppearance.BorderColor = BorderCard;
         instructionsButton.ForeColor = TextSecondary;
         instructionsButton.BackColor = Color.FromArgb(10, 255, 255, 255);
         instructionsButton.Click += OnInstructions;
 
-        var aboutButton = CreateStyledButton("About", 160, 520, 132, 34, TextSecondary);
+        var aboutButton = CreateStyledButton("About", 160, 526, 132, 34, TextSecondary);
         aboutButton.FlatAppearance.BorderColor = BorderCard;
         aboutButton.ForeColor = TextSecondary;
         aboutButton.BackColor = Color.FromArgb(10, 255, 255, 255);
         aboutButton.Click += OnAbout;
 
-        var exitButton = CreateStyledButton("Exit", 304, 520, 144, 34, StatusRed);
+        var exitButton = CreateStyledButton("Exit", 304, 526, 144, 34, StatusRed);
         exitButton.Click += OnExitClick;
 
         var versionLabel = new Label
         {
-            Text = "v1.0  \u2022  Not affiliated with Blizzard Entertainment",
+            Text = "v1.1  \u2022  Not affiliated with Blizzard Entertainment",
             Font = new Font("Segoe UI", 8.5f),
             ForeColor = TextMuted,
             BackColor = Color.Transparent,
             AutoSize = false,
             TextAlign = ContentAlignment.MiddleCenter,
             Size = new Size(432, 20),
-            Location = new Point(16, 563)
+            Location = new Point(16, 568)
         };
 
         Controls.Add(instructionsButton);
@@ -511,11 +514,73 @@ public class MainForm : Form
             ScreenCapture.TargetScreen = _screens[_displayCombo.SelectedIndex];
     }
 
+    private void PopulateAdvertisedIpCombo()
+    {
+        _qrIpComboPopulating = true;
+        try
+        {
+            _qrIpCombo.Items.Clear();
+            var choices = NetworkAddressHelper.GetRankedLanIpv4Choices();
+            foreach (var c in choices)
+                _qrIpCombo.Items.Add(c);
+
+            if (choices.Count == 0)
+            {
+                _qrIpCombo.Enabled = false;
+                return;
+            }
+
+            _qrIpCombo.Enabled = true;
+            var current = _webSocketServer.AdvertisedLanIP;
+            var idx = 0;
+            for (var i = 0; i < choices.Count; i++)
+            {
+                if (choices[i].Address == current)
+                    idx = i;
+            }
+
+            _qrIpCombo.SelectedIndex = idx;
+        }
+        finally
+        {
+            _qrIpComboPopulating = false;
+        }
+    }
+
+    private void OnAdvertisedIpComboChanged(object? sender, EventArgs e)
+    {
+        if (_qrIpComboPopulating || _qrIpCombo.SelectedItem is not NetworkAddressHelper.LanIpv4Choice choice)
+            return;
+
+        _webSocketServer.TrySetAdvertisedLanIp(choice.Address);
+        _lastRenderedQrUri = "";
+        UpdateStatus();
+    }
+
+    private void OnMonitorPersistentFailure(string message)
+    {
+        if (!IsHandleCreated || IsDisposed)
+            return;
+        BeginInvoke(() =>
+        {
+            _trayIcon.ShowBalloonTip(10000, "Monitoring warning", message, ToolTipIcon.Warning);
+        });
+    }
+
     private void OnFormLoad(object? sender, EventArgs e)
     {
         try
         {
             _webSocketServer.Start();
+            if (!_webSocketServer.IsRunning)
+            {
+                MessageBox.Show(
+                    "The WebSocket server could not start (port may be in use). The phone app will not connect until this is resolved.",
+                    "Overwatch Queue Tracker",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
+
             _gameMonitor.Start();
 
             OWWebSocketServer.GetCurrentStateOnConnect = () =>
@@ -527,6 +592,7 @@ public class MainForm : Form
                     BeginInvoke(new Action(UpdateStatus));
             };
 
+            PopulateAdvertisedIpCombo();
             UpdateStatus();
             SyncTrayMenu();
             _startButton.Enabled = false;
@@ -538,7 +604,7 @@ public class MainForm : Form
             _trayIcon.ShowBalloonTip(
                 3000,
                 "Overwatch Queue Tracker",
-                $"Monitoring started. Server: {_webSocketServer.LocalIP}:{_webSocketServer.Port}",
+                "Monitoring started. Scan the QR code with your phone to connect.",
                 ToolTipIcon.Info);
         }
         catch (Exception ex)
@@ -561,18 +627,29 @@ public class MainForm : Form
         int port = _webSocketServer.Port;
         var state = _gameMonitor.CurrentState;
 
-        // Simple diagnostic logging to help debug connection behaviour
-        System.Diagnostics.Debug.WriteLine($"[OW Desktop] Monitoring={monitoring}, ConnectedClients={clientCount}, MobileConnected={mobileConnected}");
-        Console.WriteLine($"[OW Desktop] Monitoring={monitoring}, ConnectedClients={clientCount}, MobileConnected={mobileConnected}");
+        System.Diagnostics.Debug.WriteLine(
+            $"[OW Desktop] Monitoring={monitoring}, Clients={clientCount}, Advertised={ip}:{port}, Mobile={(mobileConnected ? "yes" : "no")}");
 
         // Status indicator
         _statusLabel.Text = monitoring ? "Monitoring Active" : "Monitoring Paused";
         _statusLabel.ForeColor = monitoring ? StatusGreen : StatusAmber;
         _statusDot.ForeColor = monitoring ? StatusGreen : StatusAmber;
 
-        // Connection info
         _serverLabel.Text = $"Server:  {ip}:{port}";
         _serverLabel.ForeColor = TextSecondary;
+
+        string wsUri = _webSocketServer.GetConnectionWebSocketUri();
+        _toolTip.SetToolTip(_connectionQrPicture, string.IsNullOrEmpty(wsUri) ? "" : "Scan with OW Tracker on your phone");
+
+        if (wsUri != _lastRenderedQrUri)
+        {
+            _lastRenderedQrUri = wsUri;
+            var previous = _connectionQrPicture.Image;
+            _connectionQrPicture.Image = string.IsNullOrEmpty(wsUri)
+                ? null
+                : DesktopConnectionQrBitmap.Create(wsUri);
+            previous?.Dispose();
+        }
 
         _clientsLabel.Text = mobileConnected ? "Mobile App Connected" : "Mobile App Disconnected";
         _clientsLabel.ForeColor = mobileConnected ? StatusGreen : StatusRed;
@@ -657,7 +734,7 @@ public class MainForm : Form
         if (e.CloseReason == CloseReason.UserClosing)
         {
             e.Cancel = true;
-            MinimizeToTray();
+            PromptExitAndCloseIfConfirmed();
         }
     }
 
@@ -670,7 +747,7 @@ public class MainForm : Form
     private void OnAbout(object? sender, EventArgs e)
     {
         MessageBox.Show(
-            "Overwatch Queue Tracker v1.0\n\n" +
+            "Overwatch Queue Tracker v1.1\n\n" +
             "Companion app for Overwatch Personal Tracker phone app (OW Tracker).\n" +
             "Detects Overwatch game states and sends\n" +
             "real-time notifications to your phone.\n\n" +
@@ -682,19 +759,34 @@ public class MainForm : Form
 
     private void OnExit(object? sender, EventArgs e)
     {
-        ExitApplication();
+        PromptExitAndCloseIfConfirmed();
     }
 
     private void OnExitClick(object? sender, EventArgs e)
     {
-        ExitApplication();
+        PromptExitAndCloseIfConfirmed();
+    }
+
+    private void PromptExitAndCloseIfConfirmed()
+    {
+        var result = MessageBox.Show(
+            "Exit Overwatch Queue Tracker?\n\nMonitoring and the connection to your phone will stop until you open the app again.",
+            "Confirm exit",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Question,
+            MessageBoxDefaultButton.Button2);
+        if (result == DialogResult.Yes)
+            ExitApplication();
     }
 
     private void ExitApplication()
     {
         _isExiting = true;
-        OWWebSocketServer.GetCurrentStateOnConnect = null;
-        OWWebSocketServer.OnConnectionCountChanged = null;
+        OWWebSocketServer.ReleaseStaticState();
+        _lastRenderedQrUri = "";
+        _connectionQrPicture.Image?.Dispose();
+        _connectionQrPicture.Image = null;
+        _toolTip.Dispose();
         _trayIcon.Visible = false;
         _trayIcon.Dispose();
         _appIcon?.Dispose();

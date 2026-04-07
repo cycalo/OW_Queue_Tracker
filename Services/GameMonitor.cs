@@ -9,10 +9,14 @@ public class GameMonitor
     private CancellationTokenSource? _cts;
     private GameState _lastState = GameState.Idle;
     private readonly int _pollIntervalMs;
+    private int _consecutiveErrors;
 
     public bool IsMonitoring { get; private set; }
 
     public event Action<GameState, GameState>? StateChanged;
+
+    /// <summary>Fired after several consecutive OCR/capture failures (monitor still running).</summary>
+    public event Action<string>? PersistentFailure;
 
     public GameState CurrentState => _lastState;
 
@@ -49,6 +53,7 @@ public class GameMonitor
             try
             {
                 var currentState = await _ocrService.DetectCurrentState();
+                _consecutiveErrors = 0;
 
                 if (currentState != _lastState)
                 {
@@ -59,7 +64,6 @@ public class GameMonitor
                     _webSocketServer.BroadcastGameState(evt);
                     StateChanged?.Invoke(previous, currentState);
 
-                    Console.WriteLine($"[Monitor] State changed: {previous} -> {currentState}");
                     System.Diagnostics.Debug.WriteLine(
                         $"State changed: {previous} -> {currentState}");
                 }
@@ -72,7 +76,15 @@ public class GameMonitor
             }
             catch (Exception ex)
             {
+                _consecutiveErrors++;
                 System.Diagnostics.Debug.WriteLine($"Monitor error: {ex.Message}");
+                if (_consecutiveErrors == 5 || (_consecutiveErrors > 5 && _consecutiveErrors % 10 == 0))
+                {
+                    var msg = ex.Message.Length > 200 ? ex.Message[..200] + "…" : ex.Message;
+                    PersistentFailure?.Invoke(
+                        $"Screen/OCR failed {_consecutiveErrors} times in a row. Last error: {msg}");
+                }
+
                 await Task.Delay(5000, ct);
             }
         }
