@@ -4,9 +4,11 @@
 
 ## Download & install
 
-1. Open the latest release here, scroll down and download **`OWTrackerDesktop.exe`**.
+1. Install the phone app from the google playstore
+   - [Overwatch Personal Tracker](https://play.google.com/store/apps/details?id=com.ow2progresstracker.app)
+2. Open the latest release here, scroll down and download **`OWTrackerDesktop.exe`**.
    - [OW Queue Tracker Desktop releases](https://github.com/cycalo/OW_Queue_Tracker/releases).
-2. Open **`OWTrackerDesktop.exe`** and click on the **`Instructions`** button for help to get started
+3. Open **`OWTrackerDesktop.exe`** and click on the **`Instructions`** button for help to get started
 
 ### Virus Scan Results ###
 [Virus Total Scan Results](https://www.virustotal.com/gui/file/3b4815ec1ac6475bfd3fdb0ebd3f1adfd983a6eee734ef54e4a1f1d27a66cb43/detection).
