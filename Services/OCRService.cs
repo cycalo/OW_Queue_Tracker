@@ -7,13 +7,52 @@ namespace OWTrackerDesktop.Services;
 
 public class OCRService
 {
-    private readonly OcrEngine _ocrEngine;
+    private OcrEngine _ocrEngine;
+    private GameLanguage _language;
 
-    public OCRService()
+    public GameLanguage Language => _language;
+
+    public OCRService(GameLanguage? language = null)
     {
-        _ocrEngine = OcrEngine.TryCreateFromLanguage(new Language("en"))
+        _language = language ?? GameLanguageStore.LoadOrDefault();
+        _ocrEngine = TryCreateOcrEngine(_language.OcrLanguageTag, out _)
+            ?? TryCreateOcrEngine(GameLanguageCatalog.Default.OcrLanguageTag, out _)
             ?? throw new InvalidOperationException(
-                "Failed to initialize OCR engine. Ensure the English language pack is installed.");
+                "Failed to initialize OCR. Install the English OCR language pack in Windows Settings " +
+                "(Time & language → Language & region).");
+    }
+
+    public void SetLanguage(GameLanguage language)
+    {
+        var engine = TryCreateOcrEngine(language.OcrLanguageTag, out var resolvedTag);
+        if (engine == null)
+            throw new InvalidOperationException(
+                $"OCR language pack not installed for {language.DisplayName} ({language.OcrLanguageTag}). " +
+                "Install it in Windows Settings (Time & language → Language & region).");
+
+        _language = language;
+        _ocrEngine = engine;
+    }
+
+    private static OcrEngine? TryCreateOcrEngine(string languageTag, out string resolvedTag)
+    {
+        resolvedTag = languageTag;
+
+        var engine = OcrEngine.TryCreateFromLanguage(new Language(languageTag));
+        if (engine != null)
+            return engine;
+
+        var dash = languageTag.IndexOf('-');
+        if (dash > 0)
+        {
+            resolvedTag = languageTag[..dash];
+            engine = OcrEngine.TryCreateFromLanguage(new Language(resolvedTag));
+            if (engine != null)
+                return engine;
+        }
+
+        resolvedTag = "user-profile";
+        return OcrEngine.TryCreateFromUserProfileLanguages();
     }
 
     public async Task<string> ExtractText(Bitmap bitmap)
@@ -36,51 +75,47 @@ public class OCRService
         }
     }
 
-    public static GameState DetectState(string text)
+    public GameState DetectBannerState(string text) => DetectBannerState(text, _language);
+
+    public static GameState DetectBannerState(string text, GameLanguage language)
     {
         if (string.IsNullOrWhiteSpace(text))
             return GameState.Idle;
 
-        string normalized = NormalizeForDetection(text);
+        string normalized = OcrTextNormalizer.NormalizeForDetection(text);
 
-        if (ContainsAny(normalized, "gamefound", "matchfound"))
+        if (ContainsAny(normalized, language.GameFoundTokens))
             return GameState.GameFound;
 
-        if (ContainsAny(normalized, "enteringpregame", "pregame", "assemblingheroes"))
-            return GameState.MatchStarting;
-
-        bool hasSearchingText = ContainsAny(normalized, "searchingforgame", "searching", "searchforgame", "search");
-        bool hasQueueContext = ContainsAny(
-            normalized,
-            "rolequeue",
-            "openqueue",
-            "cancelsearch",
-            "estimatedtime",
-            "timeelapsed");
-
-        if (hasSearchingText || hasQueueContext)
+        if (IsSearchingBanner(normalized, language))
             return GameState.Searching;
+
+        // Accept screen shows CANCEL; the searching banner does not.
+        if (ContainsAny(normalized, language.CancelTokens))
+            return GameState.GameFound;
 
         return GameState.Idle;
     }
 
-    private static string NormalizeForDetection(string text)
+    public GameState DetectPreGameState(string text) => DetectPreGameState(text, _language);
+
+    public static GameState DetectPreGameState(string text, GameLanguage language)
     {
-        var chars = new char[text.Length];
-        int index = 0;
+        if (string.IsNullOrWhiteSpace(text))
+            return GameState.Idle;
 
-        foreach (char ch in text)
-        {
-            if (char.IsLetterOrDigit(ch))
-            {
-                chars[index++] = char.ToLowerInvariant(ch);
-            }
-        }
+        string normalized = OcrTextNormalizer.NormalizeForDetection(text);
 
-        return new string(chars, 0, index);
+        if (ContainsAny(normalized, language.MatchStartingTokens))
+            return GameState.MatchStarting;
+
+        return GameState.Idle;
     }
 
-    private static bool ContainsAny(string text, params string[] tokens)
+    private static bool IsSearchingBanner(string normalized, GameLanguage language) =>
+        ContainsAny(normalized, language.SearchingTokens);
+
+    private static bool ContainsAny(string text, string[] tokens)
     {
         foreach (var token in tokens)
         {
@@ -95,15 +130,14 @@ public class OCRService
     {
         using var bannerCapture = ScreenCapture.CaptureQueueBanner();
         string bannerText = await ExtractText(bannerCapture);
-        var state = DetectState(bannerText);
+        var state = DetectBannerState(bannerText);
 
         if (state != GameState.Idle)
             return state;
 
         using var preGameCapture = ScreenCapture.CapturePreGameScreen();
         string preGameText = await ExtractText(preGameCapture);
-        state = DetectState(preGameText);
 
-        return state;
+        return DetectPreGameState(preGameText);
     }
 }

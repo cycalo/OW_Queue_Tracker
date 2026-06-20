@@ -17,8 +17,8 @@ public static class ScreenCapture
     /// </summary>
     public static Bitmap CaptureQueueBanner()
     {
-        // Slightly larger capture area to better include queue-state text at different resolutions/scales.
-        return CaptureRegionRelative(0.20, 0.0, 0.60, 0.10);
+        // Top-center banner through the accept-screen CANCEL button at common resolutions/scales.
+        return CaptureRegionRelative(0.20, 0.0, 0.60, 0.12);
     }
 
     /// <summary>

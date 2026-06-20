@@ -2,6 +2,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 using System.Runtime.InteropServices;
+using OWTrackerDesktop.Services;
 
 namespace OWTrackerDesktop;
 
@@ -9,7 +10,6 @@ public class InstructionsForm : Form
 {
     private static readonly Color BgDeep = ColorTranslator.FromHtml("#0d1117");
     private static readonly Color BgCard = ColorTranslator.FromHtml("#161b22");
-    private static readonly Color BorderCard = ColorTranslator.FromHtml("#30363d");
     private static readonly Color AccentOrange = ColorTranslator.FromHtml("#F99E1A");
     private static readonly Color TextPrimary = ColorTranslator.FromHtml("#e6edf3");
     private static readonly Color TextSecondary = ColorTranslator.FromHtml("#8b949e");
@@ -19,7 +19,7 @@ public class InstructionsForm : Form
     public InstructionsForm()
     {
         DoubleBuffered = true;
-        Text = "How to get queue notifications on your phone";
+        Text = AppLocalizer.T("instructions_title");
         Size = new Size(600, 740);
         MinimumSize = new Size(600, 740);
         MaximumSize = new Size(600, 740);
@@ -62,7 +62,7 @@ public class InstructionsForm : Form
 
         var titleLabel = new Label
         {
-            Text = "SETUP INSTRUCTIONS",
+            Text = AppLocalizer.T("instructions_header"),
             Font = new Font("Segoe UI", 14f, FontStyle.Bold),
             ForeColor = TextPrimary,
             BackColor = Color.Transparent,
@@ -74,7 +74,6 @@ public class InstructionsForm : Form
         headerPanel.Controls.Add(titleLabel);
         Controls.Add(headerPanel);
 
-        // Scrollable content area under the header so text never overflows
         var contentPanel = new Panel
         {
             Location = new Point(0, headerPanel.Bottom),
@@ -84,26 +83,21 @@ public class InstructionsForm : Form
         };
         Controls.Add(contentPanel);
 
-        var steps = new (string number, string title, string body)[]
+        var steps = new (string number, string titleKey, string bodyKey)[]
         {
-            ("1", "Keep this app running",
-             "Overwatch Queue Tracker must be open on your PC."),
-            ("2", "Keep Overwatch visible",
-             "Do not minimize Overwatch. The game must be visible on screen for the tracker to work."),
-            ("3", "Same Wi\u2011Fi",
-             "Phone and PC must be on the same Wi\u2011Fi network."),
-            ("4", "Scan the QR code",
-             "On your phone, open OW Tracker → Desktop tab → Scan QR code from PC, and point the camera at the QR."),
-            ("5", "Done",
-             "When a game is found, your phone will show a notification.")
+            ("1", "inst1_title", "inst1_body"),
+            ("2", "inst2_title", "inst2_body"),
+            ("3", "inst3_title", "inst3_body"),
+            ("4", "inst4_title", "inst4_body"),
+            ("5", "inst5_title", "inst5_body")
         };
 
         const int bodyWidth = 410;
         var bodyFont = new Font("Segoe UI", 9.5f);
         int yPos = 12;
-        foreach (var (number, stepTitle, body) in steps)
+        foreach (var (number, titleKey, bodyKey) in steps)
         {
-            // Measure wrapped body text so the full text is visible and the step panel fits it
+            string body = AppLocalizer.T(bodyKey);
             var bodySize = TextRenderer.MeasureText(body, bodyFont, new Size(bodyWidth, int.MaxValue), TextFormatFlags.WordBreak);
             int bodyHeight = bodySize.Height;
             int stepPanelHeight = 22 + bodyHeight + 10;
@@ -128,7 +122,7 @@ public class InstructionsForm : Form
 
             var stepTitleLabel = new Label
             {
-                Text = stepTitle,
+                Text = AppLocalizer.T(titleKey),
                 Font = new Font("Segoe UI Semibold", 11f),
                 ForeColor = TextPrimary,
                 BackColor = Color.Transparent,
@@ -157,7 +151,7 @@ public class InstructionsForm : Form
         yPos += 4;
         var troubleLabel = new Label
         {
-            Text = "TROUBLESHOOTING",
+            Text = AppLocalizer.T("troubleshooting"),
             Font = new Font("Segoe UI", 9f, FontStyle.Bold),
             ForeColor = TextMuted,
             BackColor = Color.Transparent,
@@ -167,20 +161,11 @@ public class InstructionsForm : Form
         contentPanel.Controls.Add(troubleLabel);
         yPos += 22;
 
-        var troubleItems = new[]
-        {
-            "Make sure this app is running on your PC.",
-            "Double-check the IP address. Your router may change the IP address periodically.",
-            "Confirm your phone and PC are on the same WiFi.",
-            "Do not minimize Overwatch — it must be visible on screen to work.",
-            "Be in Fullscreen or Borderless Windowed mode in Overwatch."
-        };
-
-        foreach (var item in troubleItems)
+        for (int i = 1; i <= 5; i++)
         {
             var bulletLabel = new Label
             {
-                Text = $"\u2022  {item}",
+                Text = $"\u2022  {AppLocalizer.T($"trouble{i}")}",
                 Font = new Font("Segoe UI", 10f),
                 ForeColor = TextSecondary,
                 BackColor = Color.Transparent,
@@ -191,10 +176,9 @@ public class InstructionsForm : Form
             yPos += 20;
         }
 
-        // Action button pinned at the bottom of the dialog
         var okButton = new Button
         {
-            Text = "Got it",
+            Text = AppLocalizer.T("got_it"),
             Size = new Size(130, 40),
             Location = new Point(ClientSize.Width - 130 - 24, ClientSize.Height - 40 - 16),
             FlatStyle = FlatStyle.Flat,
@@ -215,7 +199,6 @@ public class InstructionsForm : Form
         CancelButton = okButton;
     }
 
-    // Match dark title bar + app icon used by the main window
     private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
     private const int DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 = 19;
 
@@ -234,14 +217,11 @@ public class InstructionsForm : Form
         int useDark = 1;
         int size = sizeof(int);
         if (DwmSetWindowAttribute(Handle, DWMWA_USE_IMMERSIVE_DARK_MODE, ref useDark, size) != 0)
-        {
             DwmSetWindowAttribute(Handle, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, ref useDark, size);
-        }
     }
 
     private void LoadAppIcon()
     {
-        // Try a few likely locations for the shared app icon
         string? baseDir = Path.GetDirectoryName(Application.ExecutablePath);
         string[] candidates =
         {
@@ -262,7 +242,7 @@ public class InstructionsForm : Form
         }
         catch
         {
-            // If anything goes wrong, just keep the default icon.
+            // Keep default icon.
         }
     }
 }

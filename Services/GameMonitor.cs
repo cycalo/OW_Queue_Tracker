@@ -9,6 +9,7 @@ public class GameMonitor
     private CancellationTokenSource? _cts;
     private GameState _lastState = GameState.Idle;
     private readonly int _pollIntervalMs;
+    private const int ActiveQueuePollIntervalMs = 750;
     private int _consecutiveErrors;
 
     public bool IsMonitoring { get; private set; }
@@ -22,9 +23,15 @@ public class GameMonitor
 
     public GameMonitor(OWWebSocketServer webSocketServer, int pollIntervalMs = 2000)
     {
-        _ocrService = new OCRService();
+        _ocrService = new OCRService(GameLanguageStore.LoadOrDefault());
         _webSocketServer = webSocketServer;
         _pollIntervalMs = pollIntervalMs;
+    }
+
+    public void SetGameLanguage(GameLanguage language)
+    {
+        GameLanguageStore.Save(language.Id);
+        _ocrService.SetLanguage(language);
     }
 
     public void Start()
@@ -68,7 +75,10 @@ public class GameMonitor
                         $"State changed: {previous} -> {currentState}");
                 }
 
-                await Task.Delay(_pollIntervalMs, ct);
+                var pollMs = _lastState is GameState.Searching or GameState.GameFound
+                    ? ActiveQueuePollIntervalMs
+                    : _pollIntervalMs;
+                await Task.Delay(pollMs, ct);
             }
             catch (OperationCanceledException)
             {

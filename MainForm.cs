@@ -33,6 +33,7 @@ public class MainForm : Form
     private Button _minimizeToTrayButton = null!;
     private bool _isExiting;
     private ComboBox _displayCombo = null!;
+    private ComboBox _gameLanguageCombo = null!;
     private List<Screen> _screens = null!;
 
     private ToolStripMenuItem _startTrayMenuItem = null!;
@@ -46,9 +47,22 @@ public class MainForm : Form
     private Label _statusDot = null!;
     private Label _mobileDot = null!;
     private Label _gameStateDot = null!;
+    private Label _gameStateSectionLabel = null!;
+    private Label _captureLabel = null!;
+    private Label _languageLabel = null!;
+    private Label _versionLabel = null!;
+    private Button _instructionsButton = null!;
+    private Button _aboutButton = null!;
+    private Button _exitButton = null!;
+    private ToolStripMenuItem _openTrayMenuItem = null!;
+    private ToolStripMenuItem _aboutTrayMenuItem = null!;
+    private ToolStripMenuItem _exitTrayMenuItem = null!;
     private Label _titleLabel = null!;
     private Label _subtitleLabel = null!;
     private Icon? _appIcon;
+
+    private const int WindowWidth = 480;
+    private const int WindowHeight = 704;
 
     // Color palette
     private static readonly Color BgDeep = ColorTranslator.FromHtml("#0d1117");
@@ -70,10 +84,10 @@ public class MainForm : Form
         SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
         DoubleBuffered = true;
 
-        Text = "Overwatch Queue Tracker";
-        Size = new Size(480, 624);
-        MinimumSize = new Size(480, 624);
-        MaximumSize = new Size(480, 624);
+        Text = AppLocalizer.T("window_title");
+        Size = new Size(WindowWidth, WindowHeight);
+        MinimumSize = new Size(WindowWidth, WindowHeight);
+        MaximumSize = new Size(WindowWidth, WindowHeight);
         StartPosition = FormStartPosition.CenterScreen;
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
@@ -147,7 +161,7 @@ public class MainForm : Form
 
         _titleLabel = new Label
         {
-            Text = "OVERWATCH QUEUE TRACKER",
+            Text = AppLocalizer.T("window_title").ToUpperInvariant(),
             Font = new Font("Segoe UI", 15f, FontStyle.Bold),
             ForeColor = TextPrimary,
             BackColor = Color.Transparent,
@@ -157,7 +171,7 @@ public class MainForm : Form
 
         _subtitleLabel = new Label
         {
-            Text = "Desktop Companion",
+            Text = AppLocalizer.T("app_subtitle"),
             Font = new Font("Segoe UI", 10f),
             ForeColor = TextSecondary,
             BackColor = Color.Transparent,
@@ -237,7 +251,7 @@ public class MainForm : Form
 
         _clientsLabel = new Label
         {
-            Text = "Mobile App Disconnected",
+            Text = AppLocalizer.T("mobile_disconnected"),
             Font = new Font("Segoe UI Semibold", 12f),
             ForeColor = TextSecondary,
             BackColor = Color.Transparent,
@@ -291,7 +305,7 @@ public class MainForm : Form
 
         var sectionLabel = new Label
         {
-            Text = "GAME STATE",
+            Text = AppLocalizer.T("game_state_section"),
             Font = new Font("Segoe UI", 9f, FontStyle.Bold),
             ForeColor = TextMuted,
             BackColor = Color.Transparent,
@@ -319,6 +333,8 @@ public class MainForm : Form
             Location = new Point(38, 34)
         };
 
+        _gameStateSectionLabel = sectionLabel;
+
         _gameStateCard.Controls.Add(sectionLabel);
         _gameStateCard.Controls.Add(_gameStateDot);
         _gameStateCard.Controls.Add(_gameStateLabel);
@@ -326,11 +342,11 @@ public class MainForm : Form
 
     private void BuildControlsCard()
     {
-        _controlsCard = CreateCard(356, 154);
+        _controlsCard = CreateCard(356, 200);
 
-        var captureLabel = new Label
+        _captureLabel = new Label
         {
-            Text = "DISPLAY CAPTURE",
+            Text = AppLocalizer.T("display_capture"),
             Font = new Font("Segoe UI", 9f, FontStyle.Bold),
             ForeColor = TextMuted,
             BackColor = Color.Transparent,
@@ -351,22 +367,47 @@ public class MainForm : Form
         PopulateDisplayCombo();
         _displayCombo.SelectedIndexChanged += OnDisplaySelectionChanged;
 
-        _startButton = CreateStyledButton("Start Monitoring", 16, 72, 195, 36, StatusGreen);
+        _languageLabel = new Label
+        {
+            Text = AppLocalizer.T("language_label"),
+            Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+            ForeColor = TextMuted,
+            BackColor = Color.Transparent,
+            AutoSize = true,
+            Location = new Point(16, 66)
+        };
+
+        _gameLanguageCombo = new ComboBox
+        {
+            Location = new Point(16, 84),
+            Size = new Size(400, 30),
+            DropDownStyle = ComboBoxStyle.DropDownList,
+            Font = new Font("Segoe UI", 10.5f),
+            BackColor = BgDeep,
+            ForeColor = TextPrimary,
+            FlatStyle = FlatStyle.Flat
+        };
+        PopulateGameLanguageCombo();
+        _gameLanguageCombo.SelectedIndexChanged += OnGameLanguageSelectionChanged;
+
+        _startButton = CreateStyledButton(AppLocalizer.T("start_monitoring"), 16, 120, 195, 36, StatusGreen);
         _startButton.Click += OnStartMonitoring;
         _startButton.Enabled = true;
 
-        _stopButton = CreateStyledButton("Stop Monitoring", 221, 72, 195, 36, StatusRed);
+        _stopButton = CreateStyledButton(AppLocalizer.T("stop_monitoring"), 221, 120, 195, 36, StatusRed);
         _stopButton.Click += OnStopMonitoring;
         _stopButton.Enabled = false;
 
-        _minimizeToTrayButton = CreateStyledButton("Minimize to System Tray", 16, 116, 400, 28, TextMuted);
+        _minimizeToTrayButton = CreateStyledButton(AppLocalizer.T("minimize_tray"), 16, 164, 400, 28, TextMuted);
         _minimizeToTrayButton.FlatAppearance.BorderSize = 0;
         _minimizeToTrayButton.Font = new Font("Segoe UI", 9.5f);
         _minimizeToTrayButton.ForeColor = TextSecondary;
         _minimizeToTrayButton.Click += (_, _) => MinimizeToTray();
 
-        _controlsCard.Controls.Add(captureLabel);
+        _controlsCard.Controls.Add(_captureLabel);
         _controlsCard.Controls.Add(_displayCombo);
+        _controlsCard.Controls.Add(_languageLabel);
+        _controlsCard.Controls.Add(_gameLanguageCombo);
         _controlsCard.Controls.Add(_startButton);
         _controlsCard.Controls.Add(_stopButton);
         _controlsCard.Controls.Add(_minimizeToTrayButton);
@@ -394,37 +435,47 @@ public class MainForm : Form
 
     private void BuildBottomBar()
     {
-        var instructionsButton = CreateStyledButton("Instructions", 16, 526, 132, 34, TextSecondary);
-        instructionsButton.FlatAppearance.BorderColor = BorderCard;
-        instructionsButton.ForeColor = TextSecondary;
-        instructionsButton.BackColor = Color.FromArgb(10, 255, 255, 255);
-        instructionsButton.Click += OnInstructions;
+        _instructionsButton = CreateStyledButton(AppLocalizer.T("instructions"), 16, 0, 132, 34, TextSecondary);
+        _instructionsButton.FlatAppearance.BorderColor = BorderCard;
+        _instructionsButton.ForeColor = TextSecondary;
+        _instructionsButton.BackColor = Color.FromArgb(10, 255, 255, 255);
+        _instructionsButton.Click += OnInstructions;
 
-        var aboutButton = CreateStyledButton("About", 160, 526, 132, 34, TextSecondary);
-        aboutButton.FlatAppearance.BorderColor = BorderCard;
-        aboutButton.ForeColor = TextSecondary;
-        aboutButton.BackColor = Color.FromArgb(10, 255, 255, 255);
-        aboutButton.Click += OnAbout;
+        _aboutButton = CreateStyledButton(AppLocalizer.T("about"), 160, 0, 132, 34, TextSecondary);
+        _aboutButton.FlatAppearance.BorderColor = BorderCard;
+        _aboutButton.ForeColor = TextSecondary;
+        _aboutButton.BackColor = Color.FromArgb(10, 255, 255, 255);
+        _aboutButton.Click += OnAbout;
 
-        var exitButton = CreateStyledButton("Exit", 304, 526, 144, 34, StatusRed);
-        exitButton.Click += OnExitClick;
+        _exitButton = CreateStyledButton(AppLocalizer.T("exit"), 304, 0, 144, 34, StatusRed);
+        _exitButton.Click += OnExitClick;
 
-        var versionLabel = new Label
+        _versionLabel = new Label
         {
-            Text = "v1.1  \u2022  Not affiliated with Blizzard Entertainment",
+            Text = AppLocalizer.T("version_disclaimer"),
             Font = new Font("Segoe UI", 8.5f),
             ForeColor = TextMuted,
             BackColor = Color.Transparent,
             AutoSize = false,
             TextAlign = ContentAlignment.MiddleCenter,
-            Size = new Size(432, 20),
-            Location = new Point(16, 568)
+            Size = new Size(432, 20)
         };
 
-        Controls.Add(instructionsButton);
-        Controls.Add(aboutButton);
-        Controls.Add(exitButton);
-        Controls.Add(versionLabel);
+        Controls.Add(_instructionsButton);
+        Controls.Add(_aboutButton);
+        Controls.Add(_exitButton);
+        Controls.Add(_versionLabel);
+    }
+
+    private void LayoutFooter()
+    {
+        int buttonY = ClientSize.Height - 88;
+        int versionY = ClientSize.Height - 44;
+
+        _instructionsButton.Location = new Point(16, buttonY);
+        _aboutButton.Location = new Point(160, buttonY);
+        _exitButton.Location = new Point(304, buttonY);
+        _versionLabel.Location = new Point(16, versionY);
     }
 
     private void LoadAppIcon()
@@ -454,39 +505,67 @@ public class MainForm : Form
         _trayIcon = new NotifyIcon
         {
             Icon = _appIcon ?? SystemIcons.Application,
-            Text = "Overwatch Queue Tracker",
+            Text = AppLocalizer.T("window_title"),
             Visible = true
         };
 
-        var openItem = new ToolStripMenuItem("Open");
-        openItem.Click += (_, _) => RestoreFromTray();
+        _openTrayMenuItem = new ToolStripMenuItem(AppLocalizer.T("tray_open"));
+        _openTrayMenuItem.Click += (_, _) => RestoreFromTray();
 
-        var startItem = new ToolStripMenuItem("Start Monitoring");
-        startItem.Click += (_, _) => { _gameMonitor.Start(); UpdateStatus(); SyncTrayMenu(); };
+        _startTrayMenuItem = new ToolStripMenuItem(AppLocalizer.T("tray_start"));
+        _startTrayMenuItem.Click += (_, _) => { _gameMonitor.Start(); UpdateStatus(); SyncTrayMenu(); };
 
-        var stopItem = new ToolStripMenuItem("Stop Monitoring");
-        stopItem.Click += (_, _) => { _gameMonitor.Stop(); UpdateStatus(); SyncTrayMenu(); };
+        _stopTrayMenuItem = new ToolStripMenuItem(AppLocalizer.T("tray_stop"));
+        _stopTrayMenuItem.Click += (_, _) => { _gameMonitor.Stop(); UpdateStatus(); SyncTrayMenu(); };
 
-        var aboutItem = new ToolStripMenuItem("About");
-        aboutItem.Click += OnAbout;
+        _aboutTrayMenuItem = new ToolStripMenuItem(AppLocalizer.T("tray_about"));
+        _aboutTrayMenuItem.Click += OnAbout;
 
-        var exitItem = new ToolStripMenuItem("Exit");
-        exitItem.Click += OnExit;
+        _exitTrayMenuItem = new ToolStripMenuItem(AppLocalizer.T("tray_exit"));
+        _exitTrayMenuItem.Click += OnExit;
 
         var contextMenu = new ContextMenuStrip();
-        contextMenu.Items.Add(openItem);
+        contextMenu.Items.Add(_openTrayMenuItem);
         contextMenu.Items.Add(new ToolStripSeparator());
-        contextMenu.Items.Add(startItem);
-        contextMenu.Items.Add(stopItem);
+        contextMenu.Items.Add(_startTrayMenuItem);
+        contextMenu.Items.Add(_stopTrayMenuItem);
         contextMenu.Items.Add(new ToolStripSeparator());
-        contextMenu.Items.Add(aboutItem);
-        contextMenu.Items.Add(exitItem);
+        contextMenu.Items.Add(_aboutTrayMenuItem);
+        contextMenu.Items.Add(_exitTrayMenuItem);
 
         _trayIcon.ContextMenuStrip = contextMenu;
         _trayIcon.DoubleClick += (_, _) => RestoreFromTray();
+    }
 
-        _startTrayMenuItem = startItem;
-        _stopTrayMenuItem = stopItem;
+    private void ApplyLocalization()
+    {
+        Text = AppLocalizer.T("window_title");
+        _titleLabel.Text = AppLocalizer.T("window_title").ToUpperInvariant();
+        _subtitleLabel.Text = AppLocalizer.T("app_subtitle");
+        _gameStateSectionLabel.Text = AppLocalizer.T("game_state_section");
+        _captureLabel.Text = AppLocalizer.T("display_capture");
+        _languageLabel.Text = AppLocalizer.T("language_label");
+        _startButton.Text = AppLocalizer.T("start_monitoring");
+        _stopButton.Text = AppLocalizer.T("stop_monitoring");
+        _minimizeToTrayButton.Text = AppLocalizer.T("minimize_tray");
+        _instructionsButton.Text = AppLocalizer.T("instructions");
+        _aboutButton.Text = AppLocalizer.T("about");
+        _exitButton.Text = AppLocalizer.T("exit");
+        _versionLabel.Text = AppLocalizer.T("version_disclaimer");
+
+        _openTrayMenuItem.Text = AppLocalizer.T("tray_open");
+        _startTrayMenuItem.Text = AppLocalizer.T("tray_start");
+        _stopTrayMenuItem.Text = AppLocalizer.T("tray_stop");
+        _aboutTrayMenuItem.Text = AppLocalizer.T("tray_about");
+        _exitTrayMenuItem.Text = AppLocalizer.T("tray_exit");
+        _trayIcon.Text = AppLocalizer.T("window_title");
+
+        int displayIndex = _displayCombo.SelectedIndex;
+        PopulateDisplayCombo();
+        if (displayIndex >= 0 && displayIndex < _displayCombo.Items.Count)
+            _displayCombo.SelectedIndex = displayIndex;
+
+        UpdateStatus();
     }
 
     private void PopulateDisplayCombo()
@@ -497,8 +576,8 @@ public class MainForm : Form
         {
             var screen = _screens[i];
             string label = screen.Primary
-                ? $"Primary - {screen.Bounds.Width}\u00d7{screen.Bounds.Height}"
-                : $"Display {i + 1} - {screen.Bounds.Width}\u00d7{screen.Bounds.Height}";
+                ? $"{AppLocalizer.T("display_primary")} - {screen.Bounds.Width}\u00d7{screen.Bounds.Height}"
+                : $"{AppLocalizer.T("display_label", i + 1)} - {screen.Bounds.Width}\u00d7{screen.Bounds.Height}";
             _displayCombo.Items.Add(label);
         }
         if (_screens.Count > 0)
@@ -512,6 +591,48 @@ public class MainForm : Form
     {
         if (_displayCombo.SelectedIndex >= 0 && _displayCombo.SelectedIndex < _screens.Count)
             ScreenCapture.TargetScreen = _screens[_displayCombo.SelectedIndex];
+    }
+
+    private void PopulateGameLanguageCombo()
+    {
+        var saved = GameLanguageStore.LoadOrDefault();
+        _gameLanguageCombo.Items.Clear();
+
+        int selectedIndex = 0;
+        for (int i = 0; i < GameLanguageCatalog.All.Count; i++)
+        {
+            var language = GameLanguageCatalog.All[i];
+            _gameLanguageCombo.Items.Add(language.DisplayName);
+            if (language.Id == saved.Id)
+                selectedIndex = i;
+        }
+
+        if (_gameLanguageCombo.Items.Count > 0)
+            _gameLanguageCombo.SelectedIndex = selectedIndex;
+    }
+
+    private void OnGameLanguageSelectionChanged(object? sender, EventArgs e)
+    {
+        if (_gameLanguageCombo.SelectedIndex < 0 ||
+            _gameLanguageCombo.SelectedIndex >= GameLanguageCatalog.All.Count)
+            return;
+
+        var language = GameLanguageCatalog.All[_gameLanguageCombo.SelectedIndex];
+        try
+        {
+            _gameMonitor.SetGameLanguage(language);
+            AppLocalizer.SetLanguage(language.Id);
+            ApplyLocalization();
+        }
+        catch (Exception ex)
+        {
+            _trayIcon.ShowBalloonTip(
+                8000,
+                AppLocalizer.T("language_pack_title"),
+                ex.Message,
+                ToolTipIcon.Warning);
+            PopulateGameLanguageCombo();
+        }
     }
 
     private void PopulateAdvertisedIpCombo()
@@ -563,20 +684,22 @@ public class MainForm : Form
             return;
         BeginInvoke(() =>
         {
-            _trayIcon.ShowBalloonTip(10000, "Monitoring warning", message, ToolTipIcon.Warning);
+            _trayIcon.ShowBalloonTip(10000, AppLocalizer.T("monitoring_warning_title"), message, ToolTipIcon.Warning);
         });
     }
 
     private void OnFormLoad(object? sender, EventArgs e)
     {
+        LayoutFooter();
+
         try
         {
             _webSocketServer.Start();
             if (!_webSocketServer.IsRunning)
             {
                 MessageBox.Show(
-                    "The WebSocket server could not start (port may be in use). The phone app will not connect until this is resolved.",
-                    "Overwatch Queue Tracker",
+                    AppLocalizer.T("ws_failed_body"),
+                    AppLocalizer.T("ws_failed_title"),
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
             }
@@ -603,15 +726,15 @@ public class MainForm : Form
 
             _trayIcon.ShowBalloonTip(
                 3000,
-                "Overwatch Queue Tracker",
-                "Monitoring started. Scan the QR code with your phone to connect.",
+                AppLocalizer.T("balloon_startup_title"),
+                AppLocalizer.T("balloon_startup_body"),
                 ToolTipIcon.Info);
         }
         catch (Exception ex)
         {
             MessageBox.Show(
-                $"Failed to start services:\n{ex.Message}",
-                "Overwatch Queue Tracker - Error",
+                AppLocalizer.T("error_services_body", ex.Message),
+                AppLocalizer.T("error_services_title"),
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
             Close();
@@ -631,15 +754,18 @@ public class MainForm : Form
             $"[OW Desktop] Monitoring={monitoring}, Clients={clientCount}, Advertised={ip}:{port}, Mobile={(mobileConnected ? "yes" : "no")}");
 
         // Status indicator
-        _statusLabel.Text = monitoring ? "Monitoring Active" : "Monitoring Paused";
+        _statusLabel.Text = monitoring
+            ? AppLocalizer.T("monitoring_active")
+            : AppLocalizer.T("monitoring_paused");
         _statusLabel.ForeColor = monitoring ? StatusGreen : StatusAmber;
         _statusDot.ForeColor = monitoring ? StatusGreen : StatusAmber;
 
-        _serverLabel.Text = $"Server:  {ip}:{port}";
+        _serverLabel.Text = $"{AppLocalizer.T("server_prefix")}  {ip}:{port}";
         _serverLabel.ForeColor = TextSecondary;
 
         string wsUri = _webSocketServer.GetConnectionWebSocketUri();
-        _toolTip.SetToolTip(_connectionQrPicture, string.IsNullOrEmpty(wsUri) ? "" : "Scan with OW Tracker on your phone");
+        _toolTip.SetToolTip(_connectionQrPicture,
+            string.IsNullOrEmpty(wsUri) ? "" : AppLocalizer.T("qr_tooltip"));
 
         if (wsUri != _lastRenderedQrUri)
         {
@@ -651,17 +777,19 @@ public class MainForm : Form
             previous?.Dispose();
         }
 
-        _clientsLabel.Text = mobileConnected ? "Mobile App Connected" : "Mobile App Disconnected";
+        _clientsLabel.Text = mobileConnected
+            ? AppLocalizer.T("mobile_connected")
+            : AppLocalizer.T("mobile_disconnected");
         _clientsLabel.ForeColor = mobileConnected ? StatusGreen : StatusRed;
         _mobileDot.ForeColor = mobileConnected ? StatusGreen : StatusRed;
 
         // Game state with color coding
         (string stateText, Color stateColor) = state switch
         {
-            GameState.Searching => ("Searching for game\u2026", StatusBlue),
-            GameState.GameFound => ("Game Found!", AccentOrange),
-            GameState.MatchStarting => ("Match Starting", StatusGreen),
-            GameState.Idle => ("Idle", TextMuted),
+            GameState.Searching => (AppLocalizer.T("state_searching"), StatusBlue),
+            GameState.GameFound => (AppLocalizer.T("state_game_found"), AccentOrange),
+            GameState.MatchStarting => (AppLocalizer.T("state_match_starting"), StatusGreen),
+            GameState.Idle => (AppLocalizer.T("state_idle"), TextMuted),
             _ => (state.ToString(), TextMuted)
         };
 
@@ -685,7 +813,11 @@ public class MainForm : Form
             sp.Invalidate();
         }
 
-        _trayIcon.Text = $"Overwatch Queue Tracker \u2014 {(monitoring ? "Active" : "Paused")} | {(mobileConnected ? "Mobile connected" : "Mobile disconnected")}";
+        string status = monitoring ? AppLocalizer.T("tray_status_active") : AppLocalizer.T("tray_status_paused");
+        string mobile = mobileConnected
+            ? AppLocalizer.T("tray_mobile_connected")
+            : AppLocalizer.T("tray_mobile_disconnected");
+        _trayIcon.Text = AppLocalizer.T("tray_summary", status, mobile);
     }
 
     private void SyncTrayMenu()
@@ -702,7 +834,11 @@ public class MainForm : Form
         _gameMonitor.Start();
         UpdateStatus();
         SyncTrayMenu();
-        _trayIcon.ShowBalloonTip(2000, "Monitoring Started", "Game monitoring is active.", ToolTipIcon.Info);
+        _trayIcon.ShowBalloonTip(
+            2000,
+            AppLocalizer.T("monitoring_started_title"),
+            AppLocalizer.T("monitoring_started_body"),
+            ToolTipIcon.Info);
     }
 
     private void OnStopMonitoring(object? sender, EventArgs e)
@@ -710,13 +846,21 @@ public class MainForm : Form
         _gameMonitor.Stop();
         UpdateStatus();
         SyncTrayMenu();
-        _trayIcon.ShowBalloonTip(2000, "Monitoring Stopped", "Game monitoring is paused.", ToolTipIcon.Info);
+        _trayIcon.ShowBalloonTip(
+            2000,
+            AppLocalizer.T("monitoring_stopped_title"),
+            AppLocalizer.T("monitoring_stopped_body"),
+            ToolTipIcon.Info);
     }
 
     private void MinimizeToTray()
     {
         Hide();
-        _trayIcon.ShowBalloonTip(1500, "Overwatch Queue Tracker", "Running in system tray. Double-click to open.", ToolTipIcon.Info);
+        _trayIcon.ShowBalloonTip(
+            1500,
+            AppLocalizer.T("tray_minimized_title"),
+            AppLocalizer.T("tray_minimized_body"),
+            ToolTipIcon.Info);
     }
 
     private void RestoreFromTray()
@@ -747,12 +891,8 @@ public class MainForm : Form
     private void OnAbout(object? sender, EventArgs e)
     {
         MessageBox.Show(
-            "Overwatch Queue Tracker v1.1\n\n" +
-            "Companion app for Overwatch Personal Tracker phone app (OW Tracker).\n" +
-            "Detects Overwatch game states and sends\n" +
-            "real-time notifications to your phone.\n\n" +
-            "Not affiliated with Blizzard Entertainment.",
-            "About Overwatch Queue Tracker",
+            AppLocalizer.T("about_body"),
+            AppLocalizer.T("about_title"),
             MessageBoxButtons.OK,
             MessageBoxIcon.Information);
     }
@@ -770,8 +910,8 @@ public class MainForm : Form
     private void PromptExitAndCloseIfConfirmed()
     {
         var result = MessageBox.Show(
-            "Exit Overwatch Queue Tracker?\n\nMonitoring and the connection to your phone will stop until you open the app again.",
-            "Confirm exit",
+            AppLocalizer.T("confirm_exit_body"),
+            AppLocalizer.T("confirm_exit_title"),
             MessageBoxButtons.YesNo,
             MessageBoxIcon.Question,
             MessageBoxDefaultButton.Button2);

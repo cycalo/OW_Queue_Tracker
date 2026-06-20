@@ -1,4 +1,4 @@
-using System.Threading;
+using OWTrackerDesktop.Services;
 
 namespace OWTrackerDesktop;
 
@@ -9,12 +9,14 @@ static class Program
     [STAThread]
     static void Main()
     {
+        AppLocalizer.SetLanguage(GameLanguageStore.LoadOrDefault().Id);
+
         using var mutex = new Mutex(true, SingleInstanceMutexName, out bool createdNew);
         if (!createdNew)
         {
             MessageBox.Show(
-                "Overwatch Queue Tracker is already running.",
-                "Overwatch Queue Tracker",
+                AppLocalizer.T("already_running"),
+                AppLocalizer.T("window_title"),
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
             return;
