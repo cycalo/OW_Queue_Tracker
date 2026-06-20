@@ -62,10 +62,9 @@ The PC app reads a small region of your Overwatch window to detect queue text. I
 
 [VirusTotal scan results](https://www.virustotal.com/gui/file/f89effe7b823f92dc47d0452d7fcf27a36cb4cb696790f21dff30cc78eaa0c3f/detection)
 
-### Hashes
+### VirusTotal Results
 
-- **MD5:** `61B96B721954B786CB431685192BAAA6`
-- **SHA-256:** `F89EFFE7B823F92DC47D0452D7FCF27A36CB4CB696790F21DFF30CC78EAA0C3F`
+- https://www.virustotal.com/gui/file/f89effe7b823f92dc47d0452d7fcf27a36cb4cb696790f21dff30cc78eaa0c3f/detection
 
 ## License & disclaimer
 
