@@ -52,9 +52,11 @@ The PC app reads a small region of your Overwatch window to detect queue text. I
 
 ## Download & install
 
-1. Open the latest release and download **`OWTrackerDesktop.exe`**.
+1. Install the phone app from the Google Play Store:
+   - [Overwatch Personal Tracker](https://play.google.com/store/apps/details?id=com.ow2progresstracker.app)
+2. Open the latest release, scroll down, and download **`OWTrackerDesktop.exe`**:
    - [OW Queue Tracker Desktop releases](https://github.com/cycalo/OW_Queue_Tracker/releases)
-2. Run the app and click **Instructions** for a quick setup guide.
+3. Run **`OWTrackerDesktop.exe`** and click **Instructions** for a quick setup guide.
 
 ### Virus scan results
 
